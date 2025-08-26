@@ -1,8 +1,14 @@
-# Use Node.js 18 Alpine as base image
-FROM node:18-alpine
+# Use Node.js 18 with Debian as base image (has OpenSSL libraries)
+FROM node:18-slim
 
 # Set working directory
 WORKDIR /app
+
+# Install OpenSSL and other required packages
+RUN apt-get update && apt-get install -y \
+    openssl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy package files
 COPY package*.json ./
