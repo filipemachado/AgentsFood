@@ -1,0 +1,179 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      UserRole @default(ADMIN)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  establishment Establishment?
+
+  @@map("users")
+}
+
+model Establishment {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  phone       String?
+  address     String?
+  active      Boolean @default(true)
+  
+  // WhatsApp Configuration
+  whatsappPhoneNumberId String?
+  whatsappBusinessAccountId String?
+  whatsappToken String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  userId   String @unique
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products Product[]
+  categories Category[]
+  agentConfig AgentConfig?
+  conversations Conversation[]
+
+  @@map("establishments")
+}
+
+model Category {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  displayOrder Int    @default(0)
+  active      Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  establishmentId String
+  establishment   Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  products        Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  price       Decimal @db.Decimal(10, 2)
+  imageUrl    String?
+  available   Boolean @default(true)
+  displayOrder Int    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  establishmentId String
+  establishment   Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  categoryId      String?
+  category        Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@map("products")
+}
+
+model AgentConfig {
+  id                String  @id @default(cuid())
+  welcomeMessage    String  @default("Olá! Bem-vindo ao nosso cardápio! Como posso ajudá-lo hoje?")
+  tone              String  @default("friendly") // friendly, professional, casual
+  language          String  @default("pt-BR")
+  maxResponseLength Int     @default(300)
+  enabledFeatures   Json    @default("{\"menu\": true, \"prices\": true, \"availability\": true, \"suggestions\": true}")
+  customPrompt      String?
+  fallbackMessage   String  @default("Desculpe, não entendi sua pergunta. Posso ajudá-lo com informações sobre nosso cardápio, preços e disponibilidade dos produtos.")
+  active            Boolean @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relationships
+  establishmentId String        @unique
+  establishment   Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+
+  @@map("agent_configs")
+}
+
+model Conversation {
+  id            String   @id @default(cuid())
+  whatsappId    String   // WhatsApp conversation ID
+  customerPhone String
+  customerName  String?
+  status        ConversationStatus @default(ACTIVE)
+  lastMessageAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Conversation Context
+  currentContext Json?    // Current conversation state (browsing_menu, ordering, etc.)
+  preferences   Json?     // User preferences and order history
+  currentOrder  Json?     // Current order being built
+
+  // Relationships
+  establishmentId String
+  establishment   Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  messages        Message[]
+
+  @@unique([whatsappId, establishmentId])
+  @@map("conversations")
+}
+
+model Message {
+  id            String      @id @default(cuid())
+  whatsappId    String      // WhatsApp message ID
+  content       String
+  messageType   MessageType @default(TEXT)
+  direction     MessageDirection
+  metadata      Json?       // Store additional WhatsApp metadata
+  processed     Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+
+  // Relationships
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  OPERATOR
+}
+
+enum ConversationStatus {
+  ACTIVE
+  ARCHIVED
+  BLOCKED
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  AUDIO
+  VIDEO
+  DOCUMENT
+  LOCATION
+  CONTACT
+}
+
+enum MessageDirection {
+  INBOUND  // From customer to business
+  OUTBOUND // From business to customer
+}

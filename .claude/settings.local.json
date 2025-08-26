@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run start:dev:*)",
+      "Bash(npm test)",
+      "Bash(taskkill:*)"
+    ],
+    "additionalDirectories": [
+      "C:\\c\\Projetos\\AgentsFood"
+    ]
+  }
+}
