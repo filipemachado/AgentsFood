@@ -2,6 +2,10 @@
   "name": "agentsfood-backend",
   "version": "1.0.0",
   "description": "AgentsFood Backend API with NestJS",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
   "main": "dist/main.js",
   "scripts": {
     "build": "nest build",
