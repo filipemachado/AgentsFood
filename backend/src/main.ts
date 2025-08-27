@@ -31,9 +31,13 @@ async function bootstrap() {
     origin: [
       'http://localhost:3000',
       'http://localhost:3001',
+      'https://agents-food.vercel.app',
+      'https://agents-food-git-master-filipes-projects-31bc3a40.vercel.app',
       configService.get('FRONTEND_URL', 'http://localhost:3000'),
     ],
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   });
 
   // Global validation pipe
