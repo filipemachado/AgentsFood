@@ -16,7 +16,18 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          const backendUrl = process.env.NEXTAUTH_BACKEND_URL || 'http://localhost:3001'
+          // Detectar ambiente automaticamente
+          const getBackendUrl = () => {
+            // Se estiver rodando no Vercel (produção)
+            if (process.env.VERCEL === '1') {
+              return 'https://agentsfood-production.up.railway.app'
+            }
+            
+            // Se estiver rodando localmente (desenvolvimento)
+            return 'http://localhost:3001'
+          }
+          
+          const backendUrl = getBackendUrl()
           const response = await fetch(`${backendUrl}/api/auth/login`, {
             method: 'POST',
             headers: {
@@ -67,6 +78,10 @@ export const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: 'jwt',
+    maxAge: 7 * 24 * 60 * 60, // 7 dias em segundos
+  },
+  jwt: {
+    maxAge: 7 * 24 * 60 * 60, // 7 dias em segundos
   },
   secret: process.env.NEXTAUTH_SECRET,
 }
