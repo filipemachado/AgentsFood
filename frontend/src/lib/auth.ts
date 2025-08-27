@@ -16,18 +16,9 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          // Detectar ambiente automaticamente
-          const getBackendUrl = () => {
-            // Se estiver rodando no Vercel (produção)
-            if (process.env.VERCEL === '1') {
-              return 'https://agentsfood-production.up.railway.app'
-            }
-            
-            // Se estiver rodando localmente (desenvolvimento)
-            return 'http://localhost:3001'
-          }
+          // URL do backend - sempre usar Railway em produção
+          const backendUrl = 'https://agentsfood-production.up.railway.app'
           
-          const backendUrl = getBackendUrl()
           const response = await fetch(`${backendUrl}/api/auth/login`, {
             method: 'POST',
             headers: {

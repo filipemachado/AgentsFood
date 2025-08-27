@@ -11,16 +11,6 @@ const nextConfig = {
     ],
   },
   
-  // Configuração de API routes
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: '/api/:path*',
-      },
-    ]
-  },
-  
   // Configuração de headers para CORS
   async headers() {
     return [
