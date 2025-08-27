@@ -13,7 +13,6 @@ import { ConversationsModule } from './modules/conversations/conversations.modul
 import { HealthModule } from './modules/health/health.module';
 import { EstablishmentModule } from './modules/establishment/establishment.module';
 import { UploadModule } from './modules/upload/upload.module';
-import { SeedModule } from './modules/seed/seed.module';
 
 @Module({
   imports: [
@@ -62,7 +61,6 @@ import { SeedModule } from './modules/seed/seed.module';
     WhatsappModule,
     ConversationsModule,
     UploadModule,
-    SeedModule,
   ],
 })
 export class AppModule {}

@@ -1,5 +1,6 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Post } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import * as bcrypt from 'bcryptjs';
 
 import { Public } from '@/common/decorators/public.decorator';
 import { PrismaService } from '@/common/prisma/prisma.service';
@@ -39,6 +40,59 @@ export class HealthController {
           redis: 'unknown',
         },
       };
+    }
+  }
+
+  @Post('seed')
+  @Public()
+  @ApiOperation({ summary: 'Execute database seed' })
+  @ApiResponse({ status: 200, description: 'Seed executed successfully' })
+  async executeSeed() {
+    try {
+      console.log('🌱 Starting seed...');
+
+      // Create admin user
+      const hashedPassword = await bcrypt.hash('admin123', 12);
+      
+      const adminUser = await this.prisma.user.upsert({
+        where: { email: 'admin@agentsfood.com' },
+        update: {},
+        create: {
+          email: 'admin@agentsfood.com',
+          password: hashedPassword,
+          name: 'Admin User',
+          role: 'ADMIN',
+        },
+      });
+
+      console.log('✅ Admin user created:', adminUser.email);
+
+      // Create establishment
+      const establishment = await this.prisma.establishment.upsert({
+        where: { userId: adminUser.id },
+        update: {},
+        create: {
+          name: 'Lanchonete da Dona Maria',
+          description: 'Os melhores lanches da cidade!',
+          phone: '+5511999999999',
+          address: 'Rua das Flores, 123 - Centro',
+          userId: adminUser.id,
+        },
+      });
+
+      console.log('✅ Establishment created:', establishment.name);
+
+      return {
+        success: true,
+        message: 'Seed executed successfully',
+        data: {
+          user: adminUser.email,
+          establishment: establishment.name,
+        },
+      };
+    } catch (error) {
+      console.error('❌ Error during seed:', error);
+      throw error;
     }
   }
 }
