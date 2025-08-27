@@ -1,6 +1,32 @@
 import { getSession } from 'next-auth/react'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+// Configuração automática de ambiente
+const getApiBaseUrl = () => {
+  // Se estiver rodando no Vercel (produção)
+  if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
+    return 'https://agentsfood-production.up.railway.app'
+  }
+  
+  // Se estiver rodando localmente (desenvolvimento)
+  if (typeof window !== 'undefined' && window.location.hostname.includes('localhost')) {
+    return 'http://localhost:3001'
+  }
+  
+  // Fallback para variável de ambiente ou produção
+  return process.env.NEXT_PUBLIC_API_URL || 'https://agentsfood-production.up.railway.app'
+}
+
+const API_BASE_URL = getApiBaseUrl()
+
+// Log para debug (remover em produção)
+if (typeof window !== 'undefined') {
+  console.log('🌍 Ambiente detectado:', {
+    hostname: window.location.hostname,
+    apiUrl: API_BASE_URL,
+    isProduction: window.location.hostname.includes('vercel.app'),
+    isLocal: window.location.hostname.includes('localhost')
+  })
+}
 
 interface ApiResponse<T> {
   data?: T
