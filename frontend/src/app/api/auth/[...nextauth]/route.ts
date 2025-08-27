@@ -30,7 +30,19 @@ const handler = NextAuth({
         }
 
         try {
-          const response = await fetch(`${process.env.NEXTAUTH_BACKEND_URL || 'http://localhost:3001'}/api/auth/login`, {
+          // Detectar ambiente automaticamente
+          const getBackendUrl = () => {
+            // Se estiver rodando no Vercel (produção)
+            if (process.env.VERCEL === '1') {
+              return 'https://agentsfood-production.up.railway.app'
+            }
+            
+            // Se estiver rodando localmente (desenvolvimento)
+            return 'http://localhost:3001'
+          }
+          
+          const backendUrl = getBackendUrl()
+          const response = await fetch(`${backendUrl}/api/auth/login`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
