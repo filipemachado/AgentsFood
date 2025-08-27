@@ -51,7 +51,7 @@ export class HealthController {
     try {
       console.log('🌱 Starting seed...');
 
-      // Create admin user
+      // Create admin user only
       const hashedPassword = await bcrypt.hash('admin123', 12);
       
       const adminUser = await this.prisma.user.upsert({
@@ -67,27 +67,11 @@ export class HealthController {
 
       console.log('✅ Admin user created:', adminUser.email);
 
-      // Create establishment
-      const establishment = await this.prisma.establishment.upsert({
-        where: { userId: adminUser.id },
-        update: {},
-        create: {
-          name: 'Lanchonete da Dona Maria',
-          description: 'Os melhores lanches da cidade!',
-          phone: '+5511999999999',
-          address: 'Rua das Flores, 123 - Centro',
-          userId: adminUser.id,
-        },
-      });
-
-      console.log('✅ Establishment created:', establishment.name);
-
       return {
         success: true,
         message: 'Seed executed successfully',
         data: {
           user: adminUser.email,
-          establishment: establishment.name,
         },
       };
     } catch (error) {
