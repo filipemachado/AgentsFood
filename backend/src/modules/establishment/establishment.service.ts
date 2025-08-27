@@ -37,13 +37,21 @@ export class EstablishmentService {
       throw new BadRequestException('User already has an establishment');
     }
 
+    // Ensure required fields have default values
+    const establishmentData = {
+      name: createDto.name || 'AgentsFood',
+      description: createDto.description || 'Estabelecimento padrão',
+      phone: createDto.phone || '+5511999999999',
+      address: createDto.address || 'Endereço padrão',
+      active: true,
+      user: {
+        connect: { id: userId }
+      }
+    };
+
     // Create establishment with default values
     const establishment = await this.prisma.establishment.create({
-      data: {
-        ...createDto,
-        userId,
-        active: true,
-      },
+      data: establishmentData,
       include: {
         agentConfig: true,
       },
