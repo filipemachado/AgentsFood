@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Put, Post, Body, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 
 import { EstablishmentService } from './establishment.service';
@@ -18,6 +18,16 @@ export class EstablishmentController {
   @ApiResponse({ status: 200, description: 'Establishment retrieved successfully' })
   async getEstablishment(@CurrentUser('id') userId: string) {
     return this.establishmentService.findByUserId(userId);
+  }
+
+  @Post()
+  @ApiOperation({ summary: 'Create initial establishment for user' })
+  @ApiResponse({ status: 201, description: 'Establishment created successfully' })
+  async createEstablishment(
+    @CurrentUser('id') userId: string,
+    @Body() createDto: UpdateEstablishmentDto,
+  ) {
+    return this.establishmentService.createInitial(userId, createDto);
   }
 
   @Put()
