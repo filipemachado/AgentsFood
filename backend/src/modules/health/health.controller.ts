@@ -43,6 +43,36 @@ export class HealthController {
     }
   }
 
+  @Post('migrate')
+  @Public()
+  @ApiOperation({ summary: 'Execute Prisma migrations' })
+  @ApiResponse({ status: 200, description: 'Migrations executed successfully' })
+  async executeMigrations() {
+    try {
+      console.log('🔄 Starting Prisma migrations...');
+
+      // Execute Prisma migrations
+      const { execSync } = require('child_process');
+      
+      // Generate Prisma client
+      execSync('npx prisma generate', { stdio: 'inherit' });
+      
+      // Push schema to database (create tables)
+      execSync('npx prisma db push', { stdio: 'inherit' });
+
+      console.log('✅ Migrations completed successfully');
+
+      return {
+        success: true,
+        message: 'Database migrations completed successfully',
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      console.error('❌ Error during migrations:', error);
+      throw error;
+    }
+  }
+
   @Post('seed')
   @Public()
   @ApiOperation({ summary: 'Execute database seed' })
