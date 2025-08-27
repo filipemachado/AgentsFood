@@ -43,6 +43,57 @@ export class HealthController {
     }
   }
 
+  @Get('debug')
+  @Public()
+  @ApiOperation({ summary: 'Debug endpoint to test routes' })
+  @ApiResponse({ status: 200, description: 'Debug information' })
+  async debug() {
+    try {
+      // Test database connection
+      const dbTest = await this.prisma.$queryRaw`SELECT 1 as test`
+      
+      // Test categories endpoint
+      let categoriesTest = null
+      try {
+        categoriesTest = await this.prisma.category.findMany({ take: 1 })
+      } catch (error) {
+        categoriesTest = { error: error.message }
+      }
+
+      // Test agent config endpoint
+      let agentConfigTest = null
+      try {
+        agentConfigTest = await this.prisma.agentConfig.findFirst()
+      } catch (error) {
+        agentConfigTest = { error: error.message }
+      }
+
+      return {
+        success: true,
+        timestamp: new Date().toISOString(),
+        database: {
+          status: 'connected',
+          test: dbTest
+        },
+        categories: {
+          status: categoriesTest?.error ? 'error' : 'working',
+          data: categoriesTest
+        },
+        agentConfig: {
+          status: agentConfigTest?.error ? 'error' : 'working',
+          data: agentConfigTest
+        }
+      }
+    } catch (error) {
+      console.error('❌ Debug error:', error)
+      return {
+        success: false,
+        error: error.message,
+        timestamp: new Date().toISOString()
+      }
+    }
+  }
+
   @Post('migrate')
   @Public()
   @ApiOperation({ summary: 'Execute Prisma migrations' })
