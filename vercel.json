@@ -9,7 +9,7 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/api/$1"
+      "dest": "/frontend/api/$1"
     },
     {
       "src": "/(.*)",
@@ -17,6 +17,6 @@
     }
   ],
   "env": {
-    "NEXT_PUBLIC_API_URL": "https://seu-backend.vercel.app"
+    "NEXT_PUBLIC_API_URL": "https://agentsfood-production.up.railway.app"
   }
 }
