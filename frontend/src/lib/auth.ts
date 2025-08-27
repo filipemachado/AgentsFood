@@ -12,12 +12,14 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
+          console.log('❌ Credenciais faltando:', { email: !!credentials?.email, password: !!credentials?.password })
           return null
         }
 
         try {
           // URL do backend - sempre usar Railway em produção
           const backendUrl = 'https://agentsfood-production.up.railway.app'
+          console.log('🌐 Tentando autenticar com:', backendUrl)
           
           const response = await fetch(`${backendUrl}/api/auth/login`, {
             method: 'POST',
@@ -30,11 +32,16 @@ export const authOptions: NextAuthOptions = {
             }),
           })
 
+          console.log('📡 Resposta do backend:', response.status, response.statusText)
+
           if (!response.ok) {
+            const errorText = await response.text()
+            console.log('❌ Erro na resposta:', errorText)
             return null
           }
 
           const data = await response.json()
+          console.log('✅ Login bem-sucedido:', { userId: data.user.id, email: data.user.email })
           
           return {
             id: data.user.id,
@@ -44,7 +51,7 @@ export const authOptions: NextAuthOptions = {
             establishment: data.user.establishment,
           }
         } catch (error) {
-          console.error('Authentication error:', error)
+          console.error('❌ Erro na autenticação:', error)
           return null
         }
       }
