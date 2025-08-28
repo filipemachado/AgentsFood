@@ -322,7 +322,7 @@ export class WhatsappService {
     return {
       whatsappPhoneNumberId: establishment.whatsappPhoneNumberId || '',
       whatsappBusinessAccountId: establishment.whatsappBusinessAccountId || '',
-      whatsappToken: establishment.whatsappToken ? '***' + establishment.whatsappToken.slice(-4) : '', // Mascarar token
+      whatsappToken: establishment.whatsappToken || '', // ✅ Retornar token completo para configuração
       isConfigured: !!(establishment.whatsappPhoneNumberId && establishment.whatsappToken),
     };
   }
