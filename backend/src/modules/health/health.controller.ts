@@ -94,6 +94,24 @@ export class HealthController {
     }
   }
 
+  @Get('env')
+  @Public()
+  @ApiOperation({ summary: 'Check environment variables' })
+  @ApiResponse({ status: 200, description: 'Environment variables status' })
+  async checkEnv() {
+    return {
+      success: true,
+      timestamp: new Date().toISOString(),
+      environment: {
+        NODE_ENV: process.env.NODE_ENV || 'not set',
+        WHATSAPP_VERIFY_TOKEN: process.env.WHATSAPP_VERIFY_TOKEN || 'not set',
+        WHATSAPP_TOKEN: process.env.WHATSAPP_TOKEN ? '***' + process.env.WHATSAPP_TOKEN.slice(-4) : 'not set',
+        WHATSAPP_PHONE_NUMBER_ID: process.env.WHATSAPP_PHONE_NUMBER_ID || 'not set',
+        DATABASE_URL: process.env.DATABASE_URL ? '***' + process.env.DATABASE_URL.slice(-20) : 'not set',
+      }
+    }
+  }
+
   @Post('migrate')
   @Public()
   @ApiOperation({ summary: 'Execute Prisma migrations' })
