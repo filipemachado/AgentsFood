@@ -113,6 +113,18 @@ export class HealthController {
     }
   }
 
+  @Get('test')
+  @Public()
+  @ApiOperation({ summary: 'Simple test endpoint' })
+  @ApiResponse({ status: 200, description: 'Simple test response' })
+  async test() {
+    return {
+      message: 'Test endpoint working!',
+      timestamp: new Date().toISOString(),
+      success: true
+    }
+  }
+
   @Post('migrate')
   @Public()
   @ApiOperation({ summary: 'Execute Prisma migrations' })
