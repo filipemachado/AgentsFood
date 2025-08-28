@@ -216,9 +216,10 @@ export class WhatsappService {
       const payload = {
         messaging_product: 'whatsapp',
         to: to,
-        type: 'text',
-        text: {
-          body: message,
+        type: 'template',
+        template: {
+          name: 'hello_world',
+          language: { code: 'en_US' }
         },
       };
 
