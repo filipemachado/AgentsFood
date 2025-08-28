@@ -9,7 +9,7 @@ import axios from 'axios';
 export class WhatsappService {
   private readonly logger = new Logger(WhatsappService.name);
   private readonly whatsappToken: string;
-  private readonly whatsappUrl = 'https://graph.facebook.com/v18.0';
+  private readonly whatsappUrl = 'https://graph.facebook.com/v22.0';
 
   constructor(
     private prisma: PrismaService,
