@@ -19,6 +19,7 @@ import {
   ApiQuery 
 } from '@nestjs/swagger';
 import { WhatsappService } from './whatsapp.service';
+import { WhatsAppWebService } from './whatsapp-web.service';
 import { Public } from '@/common/decorators/public.decorator';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
@@ -27,7 +28,10 @@ import { WhatsAppWebhookDto, SendMessageDto, WhatsAppConfigDto, TestConnectionDt
 @ApiTags('whatsapp')
 @Controller()
 export class WhatsappController {
-  constructor(private whatsappService: WhatsappService) {}
+  constructor(
+    private whatsappService: WhatsappService,
+    private whatsappWebService: WhatsAppWebService,
+  ) {}
 
   // Webhook endpoints (public)
   @Get('webhook/whatsapp')
@@ -174,5 +178,143 @@ export class WhatsappController {
     @Body() testData: { phoneNumber: string; message: string },
   ) {
     return this.whatsappService.sendTestMessage(establishmentId, testData.phoneNumber, testData.message);
+  }
+
+  // WhatsApp Web endpoints
+  @Get('whatsapp-web/status')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Obter status da conexão WhatsApp Web' })
+  @ApiResponse({ status: 200, description: 'Status retornado com sucesso' })
+  async getWhatsAppWebStatus() {
+    const connectionStatus = this.whatsappWebService.getConnectionStatus();
+    const stats = await this.whatsappWebService.getWebStats();
+    
+    return {
+      ...connectionStatus,
+      ...stats,
+    };
+  }
+
+  @Post('whatsapp-web/connect')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Conectar ao WhatsApp Web' })
+  @ApiResponse({ status: 200, description: 'Conexão iniciada' })
+  async connectWhatsAppWeb() {
+    if (!this.whatsappWebService.isEnabled()) {
+      return {
+        success: false,
+        message: 'WhatsApp Web não está habilitado. Configure WHATSAPP_WEB_ENABLED=true nas variáveis de ambiente.',
+      };
+    }
+
+    const connected = await this.whatsappWebService.connect();
+    
+    return {
+      success: connected,
+      message: connected 
+        ? 'Conexão estabelecida com sucesso!' 
+        : 'Falha ao conectar. Verifique os logs para mais detalhes.',
+      status: this.whatsappWebService.getConnectionStatus(),
+    };
+  }
+
+  @Post('whatsapp-web/disconnect')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Desconectar do WhatsApp Web' })
+  @ApiResponse({ status: 200, description: 'Desconectado com sucesso' })
+  async disconnectWhatsAppWeb() {
+    await this.whatsappWebService.disconnect();
+    
+    return {
+      success: true,
+      message: 'Desconectado com sucesso!',
+      status: this.whatsappWebService.getConnectionStatus(),
+    };
+  }
+
+  @Post('whatsapp-web/reconnect')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Forçar reconexão do WhatsApp Web' })
+  @ApiResponse({ status: 200, description: 'Reconexão iniciada' })
+  async reconnectWhatsAppWeb() {
+    if (!this.whatsappWebService.isEnabled()) {
+      return {
+        success: false,
+        message: 'WhatsApp Web não está habilitado',
+      };
+    }
+
+    const connected = await this.whatsappWebService.forceReconnect();
+    
+    return {
+      success: connected,
+      message: connected ? 'Reconexão bem-sucedida!' : 'Falha na reconexão',
+      status: this.whatsappWebService.getConnectionStatus(),
+    };
+  }
+
+  @Post('whatsapp-web/generate-qr')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Gerar novo QR Code para WhatsApp Web' })
+  @ApiResponse({ status: 200, description: 'QR Code gerado' })
+  async generateQRCode() {
+    if (!this.whatsappWebService.isEnabled()) {
+      return {
+        success: false,
+        message: 'WhatsApp Web não está habilitado',
+      };
+    }
+
+    const generated = await this.whatsappWebService.generateNewQR();
+    
+    return {
+      success: generated,
+      message: generated 
+        ? 'QR Code gerado! Verifique o terminal/logs do servidor.' 
+        : 'WhatsApp Web já está conectado ou erro ao gerar QR Code',
+      status: this.whatsappWebService.getConnectionStatus(),
+    };
+  }
+
+  @Post('whatsapp-web/send-test')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Enviar mensagem de teste via WhatsApp Web' })
+  @ApiResponse({ status: 200, description: 'Mensagem enviada' })
+  @ApiBody({ 
+    schema: { 
+      type: 'object', 
+      properties: { 
+        phoneNumber: { type: 'string', example: '5511999999999' },
+        message: { type: 'string', example: 'Esta é uma mensagem de teste via WhatsApp Web!' }
+      } 
+    } 
+  })
+  async sendTestMessageWeb(
+    @Body() testData: { phoneNumber: string; message: string },
+  ) {
+    if (!this.whatsappWebService.isWhatsAppWebConnected()) {
+      return {
+        success: false,
+        message: 'WhatsApp Web não está conectado',
+      };
+    }
+
+    const success = await this.whatsappWebService.sendMessageToPhone(
+      testData.phoneNumber, 
+      testData.message
+    );
+    
+    return {
+      success,
+      message: success ? 'Mensagem enviada com sucesso!' : 'Falha ao enviar mensagem',
+      phoneNumber: testData.phoneNumber,
+      sentMessage: testData.message,
+    };
   }
 }
