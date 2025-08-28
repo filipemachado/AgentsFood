@@ -99,6 +99,7 @@ export class HealthController {
   @ApiOperation({ summary: 'Check environment variables' })
   @ApiResponse({ status: 200, description: 'Environment variables status' })
   async checkEnv() {
+    // ✅ Endpoint para verificar variáveis de ambiente no Railway
     return {
       success: true,
       timestamp: new Date().toISOString(),
