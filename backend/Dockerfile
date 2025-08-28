@@ -1,5 +1,5 @@
-# Use Node.js 18 with Debian as base image (has OpenSSL libraries)
-FROM node:18-slim
+# Use Node.js 20 with Debian as base image (has OpenSSL libraries)
+FROM node:20-slim
 
 # Set working directory
 WORKDIR /app
