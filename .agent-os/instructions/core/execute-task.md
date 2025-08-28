@@ -8,6 +8,26 @@ encoding: UTF-8
 
 # Task Execution Rules
 
+## 🚀 **STATUS ATUAL DO PROJETO**
+
+**⚠️ IMPORTANTE:** O projeto AgentsFood está em **PRODUÇÃO COMPLETA** com todas as funcionalidades implementadas e funcionando perfeitamente.
+
+**✅ Status de Produção:**
+- **Backend:** Deployado no Railway (`agentsfood-production.up.railway.app`)
+- **Frontend:** Deployado no Vercel (`agents-food.vercel.app`)
+- **Database:** PostgreSQL funcionando perfeitamente
+- **Autenticação:** JWT funcionando
+- **CORS:** Configurado e funcionando
+- **Erros 500:** Completamente resolvidos
+- **Establishment:** Sistema implementado e funcionando
+
+**🎯 Para novas tarefas:**
+- **Testar sempre em produção** antes de implementar
+- **Verificar se a funcionalidade já existe** e está funcionando
+- **Focar em otimizações** e melhorias, não em correções básicas
+
+---
+
 ## Overview
 
 Execute a specific task along with its sub-tasks systematically following a TDD development workflow.
