@@ -182,21 +182,33 @@ export class WhatsappService {
   async sendMessage(to: string, message: string, establishmentId?: string): Promise<any> {
     try {
       let phoneNumberId = this.configService.get<string>('WHATSAPP_PHONE_NUMBER_ID');
+      let whatsappToken = this.whatsappToken;
 
-      // Se establishmentId foi fornecido, buscar phone_number_id específico
+      // Se establishmentId foi fornecido, buscar configurações específicas do estabelecimento
       if (establishmentId) {
         const establishment = await this.prisma.establishment.findUnique({
           where: { id: establishmentId },
-          select: { whatsappPhoneNumberId: true },
+          select: { 
+            whatsappPhoneNumberId: true,
+            whatsappToken: true 
+          },
         });
         
         if (establishment?.whatsappPhoneNumberId) {
           phoneNumberId = establishment.whatsappPhoneNumberId;
         }
+        
+        if (establishment?.whatsappToken) {
+          whatsappToken = establishment.whatsappToken;
+        }
       }
 
       if (!phoneNumberId) {
         throw new Error('WhatsApp Phone Number ID não configurado');
+      }
+
+      if (!whatsappToken) {
+        throw new Error('WhatsApp Token não configurado');
       }
 
       const url = `${this.whatsappUrl}/${phoneNumberId}/messages`;
@@ -212,7 +224,7 @@ export class WhatsappService {
 
       const response = await axios.post(url, payload, {
         headers: {
-          'Authorization': `Bearer ${this.whatsappToken}`,
+          'Authorization': `Bearer ${whatsappToken}`,
           'Content-Type': 'application/json',
         },
       });
