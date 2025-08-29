@@ -280,7 +280,7 @@ export function WhatsAppTemplates() {
                         key={index}
                         className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded"
                       >
-                        {{index + 1}}: {variable}
+                        {index + 1}: {variable}
                       </span>
                     ))}
                   </div>
