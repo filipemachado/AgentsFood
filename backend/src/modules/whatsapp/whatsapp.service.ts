@@ -213,15 +213,8 @@ export class WhatsappService {
 
       const url = `${this.whatsappUrl}/${phoneNumberId}/messages`;
       
-      const payload = {
-        messaging_product: 'whatsapp',
-        to: to,
-        type: 'template',
-        template: {
-          name: 'hello_world',
-          language: { code: 'en_US' }
-        },
-      };
+      // Usar sistema inteligente de templates
+      const payload = await this.buildIntelligentMessage(message, to, establishmentId);
 
       const response = await axios.post(url, payload, {
         headers: {
@@ -237,6 +230,106 @@ export class WhatsappService {
       this.logger.error('Error sending WhatsApp message:', error.response?.data || error.message);
       throw error;
     }
+  }
+
+  // Sistema inteligente para escolher tipo de mensagem
+  private async buildIntelligentMessage(message: string, to: string, establishmentId?: string) {
+    // Verificar se existe conversa ativa (dentro de 24h)
+    const recentConversation = await this.prisma.conversation.findFirst({
+      where: {
+        whatsappId: to,
+        establishmentId: establishmentId,
+        lastMessageAt: {
+          gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // 24 horas
+        }
+      }
+    });
+
+    // Se conversa ativa, pode enviar texto livre
+    if (recentConversation) {
+      return {
+        messaging_product: 'whatsapp',
+        to: to,
+        type: 'text',
+        text: {
+          body: message
+        }
+      };
+    }
+
+    // Senão, usar template (necessário para iniciar conversa)
+    return await this.buildTemplateMessage(message, establishmentId);
+  }
+
+  // Construir mensagem usando template apropriado
+  private async buildTemplateMessage(message: string, establishmentId?: string) {
+    // Detectar tipo de template baseado no conteúdo
+    if (this.isWelcomeMessage(message)) {
+      return {
+        messaging_product: 'whatsapp',
+        type: 'template',
+        template: {
+          name: 'agentsfood_welcome',
+          language: { code: 'pt_BR' },
+          components: [{
+            type: 'body',
+            parameters: [{
+              type: 'text',
+              text: await this.getEstablishmentName(establishmentId) || 'AgentsFood'
+            }]
+          }]
+        }
+      };
+    }
+
+    if (this.isMenuMessage(message)) {
+      return {
+        messaging_product: 'whatsapp',
+        type: 'template',
+        template: {
+          name: 'agentsfood_menu_intro',
+          language: { code: 'pt_BR' },
+          components: [{
+            type: 'body',
+            parameters: [{
+              type: 'text',
+              text: message.length > 100 ? message.substring(0, 100) + '...' : message
+            }]
+          }]
+        }
+      };
+    }
+
+    // Fallback: usar hello_world com parâmetro customizado se possível
+    return {
+      messaging_product: 'whatsapp',
+      type: 'template',
+      template: {
+        name: 'hello_world',
+        language: { code: 'en_US' }
+      }
+    };
+  }
+
+  private isWelcomeMessage(message: string): boolean {
+    const welcomeKeywords = ['olá', 'oi', 'bem-vindo', 'bom dia', 'boa tarde', 'boa noite'];
+    return welcomeKeywords.some(keyword => message.toLowerCase().includes(keyword));
+  }
+
+  private isMenuMessage(message: string): boolean {
+    const menuKeywords = ['cardápio', 'menu', 'produtos', 'pratos', 'comida'];
+    return menuKeywords.some(keyword => message.toLowerCase().includes(keyword));
+  }
+
+  private async getEstablishmentName(establishmentId?: string): Promise<string> {
+    if (!establishmentId) return 'AgentsFood';
+    
+    const establishment = await this.prisma.establishment.findUnique({
+      where: { id: establishmentId },
+      select: { name: true }
+    });
+    
+    return establishment?.name || 'AgentsFood';
   }
 
   async sendMessageManual(sendMessageDto: SendMessageDto, establishmentId: string) {

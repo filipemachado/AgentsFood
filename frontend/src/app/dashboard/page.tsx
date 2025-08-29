@@ -31,6 +31,7 @@ import { apiClient, Product, Category, AgentConfig } from '@/lib/api-client';
 import { Header } from '@/components/Header';
 import { useToast } from '@/hooks/use-toast';
 import { WhatsAppConfig } from '@/components/WhatsAppConfig';
+import { WhatsAppTemplates } from '@/components/WhatsAppTemplates';
 
 export default function Dashboard() {
   const { data: session, status } = useSession()
@@ -59,6 +60,7 @@ export default function Dashboard() {
     { id: 'categories', label: 'Categorias', icon: Store },
     { id: 'agent', label: 'Configurar Agente', icon: Bot },
     { id: 'whatsapp', label: 'WhatsApp', icon: MessageSquare },
+    { id: 'templates', label: 'Templates', icon: MessageCircle },
     { id: 'conversations', label: 'Conversas', icon: MessageCircle },
     { id: 'analytics', label: 'Relatórios', icon: BarChart3 },
     { id: 'settings', label: 'Configurações', icon: Settings },
@@ -76,6 +78,8 @@ export default function Dashboard() {
         return <AgentConfigContent />;
       case 'whatsapp':
         return <WhatsAppConfig />;
+      case 'templates':
+        return <WhatsAppTemplates />;
       case 'conversations':
         return <ConversationsContent />;
       case 'analytics':
